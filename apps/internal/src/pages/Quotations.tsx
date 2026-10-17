@@ -106,7 +106,20 @@ export const Quotations: React.FC = () => {
     loadData();
 
     const handleSettingsUpdate = () => {
-      settingsService.getCompanySettings().then(setCompanySettings);
+      settingsService.getCompanySettings().then((loaded) => {
+        setCompanySettings(loaded);
+        setSelectedQuotation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            delivery_terms: loaded.default_lead_time || prev.delivery_terms,
+            payment_terms: loaded.default_payment_terms || prev.payment_terms,
+            warranty_terms: loaded.default_warranty || prev.warranty_terms,
+            validity_days: loaded.default_validity_days || prev.validity_days,
+            general_terms: '',
+          };
+        });
+      });
     };
     window.addEventListener('amabro_settings_updated', handleSettingsUpdate);
     return () => window.removeEventListener('amabro_settings_updated', handleSettingsUpdate);
@@ -136,9 +149,22 @@ export const Quotations: React.FC = () => {
     e.preventDefault();
     if (!selectedQuotation) return;
     try {
-      await quotationService.updateTerms(selectedQuotation.id, editTerms);
+      await quotationService.updateTerms(selectedQuotation.id, {
+        validity_days: editTerms.validity_days,
+        delivery_terms: editTerms.delivery_terms,
+        payment_terms: editTerms.payment_terms,
+        warranty_terms: editTerms.warranty_terms,
+        general_terms: '',
+      });
+      setSelectedQuotation({
+        ...selectedQuotation,
+        validity_days: editTerms.validity_days,
+        delivery_terms: editTerms.delivery_terms,
+        payment_terms: editTerms.payment_terms,
+        warranty_terms: editTerms.warranty_terms,
+        general_terms: '',
+      });
       setShowTermsModal(false);
-      loadData();
     } catch (err: any) {
       alert(err.message || 'Gagal menyimpan perubahan syarat ketentuan');
     }
@@ -257,6 +283,41 @@ export const Quotations: React.FC = () => {
   const isApproved = selectedQuotation.status === 'approved';
   const isSent = selectedQuotation.status === 'sent';
 
+  // Check if a term string is a legacy default from previous migrations
+  const isLegacyDelivery = (terms?: string | null) => 
+    !terms || 
+    terms.includes('wilayah Jabodetabek') || 
+    terms === 'Harga sudah termasuk pengiriman (DDP / Franko) sampai ke pabrik/lokasi customer di wilayah Jabodetabek.' ||
+    terms === 'Ready Stock / 2-3 Minggu Ex-works';
+
+  const isLegacyPayment = (terms?: string | null) => 
+    !terms || 
+    terms.includes('setelah Berita Acara Serah Terima (BAST)') || 
+    terms === 'Termin pembayaran: 30 (tiga puluh) hari kalender setelah Berita Acara Serah Terima (BAST) dan Faktur Pajak diterbitkan.' ||
+    terms === '30 Hari setelah invoice & surat jalan diterima (TOP 30)';
+
+  const isLegacyWarranty = (terms?: string | null) => 
+    !terms || 
+    terms.includes('uji komisioning selesai, tidak mencakup kelalaian') || 
+    terms === 'Garansi resmi pabrikan selama 12 (dua belas) bulan terhitung sejak tanggal uji komisioning selesai, tidak mencakup kelalaian operasional.' ||
+    terms === '12 Bulan Garansi Pabrik terhadap cacat manufaktur';
+
+  const effectiveDeliveryTerms = isLegacyDelivery(selectedQuotation.delivery_terms)
+    ? (companySettings.default_lead_time || 'Ready Stock / 2-3 Minggu Ex-works')
+    : (selectedQuotation.delivery_terms || companySettings.default_lead_time);
+
+  const effectivePaymentTerms = isLegacyPayment(selectedQuotation.payment_terms)
+    ? (companySettings.default_payment_terms || '30 Hari setelah invoice & surat jalan diterima (TOP 30)')
+    : (selectedQuotation.payment_terms || companySettings.default_payment_terms);
+
+  const effectiveWarrantyTerms = isLegacyWarranty(selectedQuotation.warranty_terms)
+    ? (companySettings.default_warranty || '12 Bulan Garansi Pabrik terhadap cacat manufaktur')
+    : (selectedQuotation.warranty_terms || companySettings.default_warranty);
+
+  const effectiveValidityDays = selectedQuotation.validity_days && selectedQuotation.validity_days !== 14
+    ? selectedQuotation.validity_days
+    : (companySettings.default_validity_days || 14);
+
   const handleSendWhatsApp = () => {
     if (!selectedQuotation) return;
     const phone = selectedQuotation.inquiry?.customer?.pic_phone || prompt('Masukkan nomor WhatsApp PIC Customer (contoh: 08123456789):');
@@ -268,7 +329,7 @@ export const Quotations: React.FC = () => {
       .replace('{quotation_no}', selectedQuotation.quotation_number)
       .replace('{project_title}', selectedQuotation.inquiry?.title || 'Pengadaan Sistem Otomasi')
       .replace('{total_price}', `Rp ${Math.round(grandTotal).toLocaleString('id-ID')} (Incl. PPN 11%)`)
-      .replace('{validity_days}', String(selectedQuotation.validity_days || companySettings.default_validity_days || 14))
+      .replace('{validity_days}', String(effectiveValidityDays))
       .replace('{sales_name}', selectedQuotation.inquiry?.assignee?.full_name || profile?.full_name || 'Sales Dept')
       .replace('{sales_phone}', companySettings.whatsapp);
 
@@ -296,7 +357,16 @@ export const Quotations: React.FC = () => {
         {/* Action Buttons: Kirim ke Customer & Catat Negosiasi */}
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <button
-            onClick={() => setShowTermsModal(true)}
+            onClick={() => {
+              setEditTerms({
+                validity_days: effectiveValidityDays,
+                delivery_terms: effectiveDeliveryTerms,
+                payment_terms: effectivePaymentTerms,
+                warranty_terms: effectiveWarrantyTerms,
+                general_terms: '',
+              });
+              setShowTermsModal(true);
+            }}
             className="inline-flex items-center gap-1.5 bg-white border border-slate-300 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-slate-50 transition-all shadow-xs cursor-pointer"
           >
             <Edit className="w-3.5 h-3.5 text-slate-500" /> Edit Syarat
@@ -484,7 +554,7 @@ export const Quotations: React.FC = () => {
               Tanggal: <strong>{new Date(selectedQuotation.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>
             </p>
             <p className="text-xs text-slate-500">
-              Masa Berlaku: <strong>{selectedQuotation.validity_days} Hari Kalender</strong>
+              Masa Berlaku: <strong>{effectiveValidityDays} Hari Kalender</strong>
             </p>
           </div>
         </div>
@@ -630,13 +700,9 @@ export const Quotations: React.FC = () => {
             Syarat & Ketentuan Penawaran:
           </h4>
           <ol className="list-decimal pl-4 space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
-            <li><strong>Pengiriman:</strong> {selectedQuotation.delivery_terms || DEFAULT_AUTOMATION_TERMS.delivery_terms}</li>
-            <li><strong>Pembayaran:</strong> {selectedQuotation.payment_terms || DEFAULT_AUTOMATION_TERMS.payment_terms}</li>
-            {companySettings.bank_account_number && (
-              <li><strong>Rekening Pembayaran:</strong> {companySettings.bank_name} A/C {companySettings.bank_account_number} a.n. {companySettings.bank_account_holder}</li>
-            )}
-            <li><strong>Masa Garansi:</strong> {selectedQuotation.warranty_terms || DEFAULT_AUTOMATION_TERMS.warranty_terms}</li>
-            <li><strong>Ketentuan Umum:</strong> {selectedQuotation.general_terms || DEFAULT_AUTOMATION_TERMS.general_terms}</li>
+            <li><strong>Pengiriman:</strong> {effectiveDeliveryTerms}</li>
+            <li><strong>Pembayaran:</strong> {effectivePaymentTerms}</li>
+            <li><strong>Masa Garansi:</strong> {effectiveWarrantyTerms}</li>
           </ol>
         </div>
 
@@ -662,11 +728,34 @@ export const Quotations: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-slate-900 text-base">
-                Edit Syarat & Ketentuan Penawaran
-              </h3>
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Edit Syarat & Ketentuan Penawaran
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Sesuaikan syarat penawaran khusus untuk penawaran ini.
+                </p>
+              </div>
               <button onClick={() => setShowTermsModal(false)} className="text-slate-400 hover:text-slate-600">
                 ✕
+              </button>
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditTerms({
+                    validity_days: companySettings.default_validity_days || 14,
+                    delivery_terms: companySettings.default_lead_time || 'Ready Stock / 2-3 Minggu Ex-works',
+                    payment_terms: companySettings.default_payment_terms || '30 Hari setelah invoice & surat jalan diterima (TOP 30)',
+                    warranty_terms: companySettings.default_warranty || '12 Bulan Garansi Pabrik terhadap cacat manufaktur',
+                    general_terms: '',
+                  });
+                }}
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 underline flex items-center gap-1 cursor-pointer"
+              >
+                Terapkan Standar Menu Setting
               </button>
             </div>
 
@@ -708,16 +797,6 @@ export const Quotations: React.FC = () => {
                   rows={2}
                   value={editTerms.warranty_terms}
                   onChange={(e) => setEditTerms({ ...editTerms, warranty_terms: e.target.value })}
-                  className="w-full p-2 rounded-lg border border-slate-300"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-slate-700 block mb-1">Ketentuan Umum</label>
-                <textarea
-                  rows={2}
-                  value={editTerms.general_terms}
-                  onChange={(e) => setEditTerms({ ...editTerms, general_terms: e.target.value })}
                   className="w-full p-2 rounded-lg border border-slate-300"
                 />
               </div>

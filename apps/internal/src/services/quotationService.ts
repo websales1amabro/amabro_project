@@ -14,10 +14,10 @@ const QUOTATION_ITEMS_STORAGE_KEY = 'asf_quotation_items_data';
 const INTERNAL_QUOTATIONS_STORAGE_KEY = 'asf_internal_quotations_data';
 
 export const DEFAULT_AUTOMATION_TERMS = {
-  payment_terms: 'Termin pembayaran: 30 (tiga puluh) hari kalender setelah Berita Acara Serah Terima (BAST) dan Faktur Pajak diterbitkan.',
-  delivery_terms: 'Harga sudah termasuk pengiriman (DDP / Franko) sampai ke pabrik/lokasi customer di wilayah Jabodetabek.',
-  warranty_terms: 'Garansi resmi pabrikan selama 12 (dua belas) bulan terhitung sejak tanggal uji komisioning selesai, tidak mencakup kelalaian operasional.',
-  general_terms: 'Pekerjaan integrasi software SCADA & commissioning dilaksanakan pada hari kerja (Senin - Jumat 08.00 - 17.00 WIB). Penambahan lingkup pekerjaan di luar penawaran ini akan dikenakan adendum.',
+  payment_terms: '30 Hari setelah invoice & surat jalan diterima (TOP 30)',
+  delivery_terms: 'Ready Stock / 2-3 Minggu Ex-works',
+  warranty_terms: '12 Bulan Garansi Pabrik terhadap cacat manufaktur',
+  general_terms: '',
   validity_days: 14,
   tax_rate: 11.00,
 };
@@ -40,7 +40,7 @@ const initialMockQuotations: Quotation[] = [
     payment_terms: DEFAULT_AUTOMATION_TERMS.payment_terms,
     delivery_terms: DEFAULT_AUTOMATION_TERMS.delivery_terms,
     warranty_terms: DEFAULT_AUTOMATION_TERMS.warranty_terms,
-    general_terms: DEFAULT_AUTOMATION_TERMS.general_terms,
+    general_terms: '',
     customer_notes: 'Pengadaan komponen otomatisasi lini packaging line 4',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),

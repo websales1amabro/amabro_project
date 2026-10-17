@@ -131,7 +131,7 @@ export const settingsService = {
     const cached = localStorage.getItem(SETTINGS_STORAGE_KEY);
     let settings: CompanySettings = cached ? { ...DEFAULT_COMPANY_SETTINGS, ...JSON.parse(cached) } : DEFAULT_COMPANY_SETTINGS;
 
-    // 2. If Supabase configured, attempt to sync from site_settings table
+    // 2. If Supabase configured, attempt to sync from site_settings table (only if company_name includes Amabro)
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
@@ -140,7 +140,7 @@ export const settingsService = {
           .limit(1)
           .maybeSingle();
 
-        if (!error && data) {
+        if (!error && data && data.company_name && data.company_name.toLowerCase().includes('amabro')) {
           settings = {
             ...settings,
             company_name: data.company_name || settings.company_name,
@@ -150,7 +150,6 @@ export const settingsService = {
             whatsapp: data.whatsapp || settings.whatsapp,
             address: data.address || settings.address,
           };
-          // Save merged back to cache
           localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
         }
       } catch (err) {
@@ -166,7 +165,26 @@ export const settingsService = {
       // 1. Save to localStorage
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
 
-      // 2. If Supabase configured, sync with site_settings table
+      // 2. Propagate new standard terms to stored quotations in localStorage
+      try {
+        const rawQuotes = localStorage.getItem('asf_quotations_data');
+        if (rawQuotes) {
+          const quotes = JSON.parse(rawQuotes);
+          const updated = quotes.map((q: any) => ({
+            ...q,
+            delivery_terms: settings.default_lead_time || q.delivery_terms,
+            payment_terms: settings.default_payment_terms || q.payment_terms,
+            warranty_terms: settings.default_warranty || q.warranty_terms,
+            validity_days: settings.default_validity_days || q.validity_days,
+            general_terms: '',
+          }));
+          localStorage.setItem('asf_quotations_data', JSON.stringify(updated));
+        }
+      } catch (quoteErr) {
+        console.warn('Could not update quotations in localStorage:', quoteErr);
+      }
+
+      // 3. If Supabase configured, sync with site_settings table and update quotations
       if (isSupabaseConfigured) {
         try {
           const { data: existing } = await supabase
@@ -195,6 +213,19 @@ export const settingsService = {
               .from('site_settings')
               .insert([payload]);
           }
+
+          // Also update active quotations in Supabase
+          await supabase
+            .from('quotations')
+            .update({
+              delivery_terms: settings.default_lead_time,
+              payment_terms: settings.default_payment_terms,
+              warranty_terms: settings.default_warranty,
+              validity_days: settings.default_validity_days,
+              general_terms: '',
+              updated_at: new Date().toISOString(),
+            })
+            .neq('status', 'won');
         } catch (dbErr) {
           console.warn('Failed to sync settings to Supabase, local cache updated successfully:', dbErr);
         }
