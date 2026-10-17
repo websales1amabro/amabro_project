@@ -1,0 +1,16 @@
+{
+  "name": "project-automation-sales-flow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplikasi Manajemen Penawaran & Transaksi Bisnis Otomasi Terpadu",
+  "scripts": {
+    "dev:internal": "npm --prefix apps/internal run dev",
+    "dev:website": "npm --prefix apps/website run dev",
+    "build:internal": "npm --prefix apps/internal run build",
+    "build:website": "npm --prefix apps/website run build",
+    "build": "npm run build:internal && npm run build:website"
+  },
+  "workspaces": [
+    "apps/*"
+  ]
+}
