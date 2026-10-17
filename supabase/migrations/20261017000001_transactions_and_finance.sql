@@ -265,52 +265,64 @@ alter table public.invoice_items enable row level security;
 alter table public.payments enable row level security;
 alter table public.tax_invoices enable row level security;
 
+-- Helper alias if needed
+create or replace function public.get_current_role()
+returns public.user_role
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select public.current_role();
+$$;
+
 -- Customer PO Policies
 create policy "Read customer_pos" on public.customer_pos
   for select using (auth.role() = 'authenticated');
 create policy "Insert/Update customer_pos" on public.customer_pos
-  for all using (public.get_current_role() in ('owner', 'sales', 'finance'));
+  for all using (public.current_role() in ('owner', 'sales', 'finance'));
 
 -- Vendor PO Policies (Strict: sales and engineer cannot read vendor costs!)
 create policy "Read vendor_pos restricted" on public.vendor_pos
-  for select using (public.get_current_role() in ('owner', 'purchasing', 'finance'));
+  for select using (public.current_role() in ('owner', 'purchasing', 'finance'));
 create policy "Manage vendor_pos" on public.vendor_pos
-  for all using (public.get_current_role() in ('owner', 'purchasing', 'finance'));
+  for all using (public.current_role() in ('owner', 'purchasing', 'finance'));
 
 create policy "Read vendor_po_items restricted" on public.vendor_po_items
-  for select using (public.get_current_role() in ('owner', 'purchasing', 'finance'));
+  for select using (public.current_role() in ('owner', 'purchasing', 'finance'));
 create policy "Manage vendor_po_items" on public.vendor_po_items
-  for all using (public.get_current_role() in ('owner', 'purchasing', 'finance'));
+  for all using (public.current_role() in ('owner', 'purchasing', 'finance'));
 
 -- Delivery Order Policies
 create policy "Read delivery_orders" on public.delivery_orders
   for select using (auth.role() = 'authenticated');
 create policy "Manage delivery_orders" on public.delivery_orders
-  for all using (public.get_current_role() in ('owner', 'sales', 'purchasing', 'finance'));
+  for all using (public.current_role() in ('owner', 'sales', 'purchasing', 'finance'));
 
 create policy "Read delivery_order_items" on public.delivery_order_items
   for select using (auth.role() = 'authenticated');
 create policy "Manage delivery_order_items" on public.delivery_order_items
-  for all using (public.get_current_role() in ('owner', 'sales', 'purchasing', 'finance'));
+  for all using (public.current_role() in ('owner', 'sales', 'purchasing', 'finance'));
 
 -- Invoices & Payments Policies
 create policy "Read invoices" on public.invoices
   for select using (auth.role() = 'authenticated');
 create policy "Manage invoices" on public.invoices
-  for all using (public.get_current_role() in ('owner', 'finance'));
+  for all using (public.current_role() in ('owner', 'finance'));
 
 create policy "Read invoice_items" on public.invoice_items
   for select using (auth.role() = 'authenticated');
 create policy "Manage invoice_items" on public.invoice_items
-  for all using (public.get_current_role() in ('owner', 'finance'));
+  for all using (public.current_role() in ('owner', 'finance'));
 
 create policy "Read payments" on public.payments
   for select using (auth.role() = 'authenticated');
 create policy "Manage payments" on public.payments
-  for all using (public.get_current_role() in ('owner', 'finance'));
+  for all using (public.current_role() in ('owner', 'finance'));
 
 -- Tax Invoices Policies
 create policy "Read tax_invoices" on public.tax_invoices
-  for select using (public.get_current_role() in ('owner', 'finance', 'purchasing'));
+  for select using (public.current_role() in ('owner', 'finance', 'purchasing'));
 create policy "Manage tax_invoices" on public.tax_invoices
-  for all using (public.get_current_role() in ('owner', 'finance'));
+  for all using (public.current_role() in ('owner', 'finance'));
+
