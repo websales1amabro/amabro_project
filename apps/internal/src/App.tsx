@@ -11,6 +11,7 @@ import { Quotations } from './pages/Quotations';
 import { Approvals } from './pages/Approvals';
 import { Transactions } from './pages/Transactions';
 import { Finance } from './pages/Finance';
+import { Products } from './pages/Products';
 import { AuditLog } from './pages/AuditLog';
 
 export function App() {
@@ -29,6 +30,7 @@ export function App() {
             <Route path="approvals" element={<Approvals />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="finance" element={<Finance />} />
+            <Route path="products" element={<Products />} />
             <Route path="audit" element={<AuditLog />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

@@ -12,7 +12,8 @@ import {
   TrendingUp, 
   History,
   ShieldAlert,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Package
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { UserRole } from '../../types/database';
@@ -44,6 +45,7 @@ export const Sidebar: React.FC = () => {
     },
     { to: '/transactions', label: 'PO & Pengiriman (Fase 2)', icon: Receipt },
     { to: '/finance', label: 'Keuangan & Pajak (Fase 3)', icon: TrendingUp },
+    { to: '/products', label: 'Katalog Produk (CMS)', icon: Package },
     { to: '/audit', label: 'Jejak Audit', icon: History },
   ];
 

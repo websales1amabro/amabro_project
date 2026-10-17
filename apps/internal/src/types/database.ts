@@ -503,3 +503,28 @@ export interface ArAgingItem {
   days_overdue: number;
 }
 
+// ----------------------------------------------------
+// WEBSITE CMS: Katalog Produk
+// ----------------------------------------------------
+
+export interface SiteProduct {
+  id: string;
+  name: string;
+  slug: string;
+  brand: string;
+  category: string;
+  model_number?: string | null;
+  short_description?: string | null;
+  description?: string | null;
+  specifications?: Record<string, string> | null;
+  features?: string[] | null;
+  image_url?: string | null;
+  datasheet_url?: string | null;
+  is_featured: boolean;
+  is_published: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+

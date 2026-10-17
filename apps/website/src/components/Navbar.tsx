@@ -11,6 +11,7 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { href: '/', label: 'Beranda' },
+    { href: '/produk', label: 'Produk' },
     { href: '/layanan', label: 'Layanan & Solusi' },
     { href: '/portofolio', label: 'Portofolio' },
     { href: '/tentang-kami', label: 'Tentang Kami' },
@@ -24,14 +25,14 @@ export const Navbar: React.FC = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" /> Distributor Resmi & Sistem Integrator Otomasi Pabrik
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" /> Distributor Resmi Instrumentasi & Valve Industri
             </span>
             <span className="text-slate-600">|</span>
             <span>Senin - Jumat: 08.00 - 17.00 WIB</span>
           </div>
           <div className="flex items-center gap-3">
-            <a href="tel:+622189901234" className="hover:text-white flex items-center gap-1 transition-colors">
-              <Phone className="w-3 h-3 text-slate-400" /> (021) 8990-1234
+            <a href="tel:02122920544" className="hover:text-white flex items-center gap-1 transition-colors">
+              <Phone className="w-3 h-3 text-slate-400" /> (021) 2292-0544
             </a>
           </div>
         </div>
@@ -42,14 +43,14 @@ export const Navbar: React.FC = () => {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white font-black flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
-            ASF
+            ABI
           </div>
           <div>
             <span className="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight block leading-tight">
-              Automation Solusi
+              AMABRO
             </span>
             <span className="text-[11px] text-slate-500 font-medium block">
-              Systems Integration & Supply
+              PT. Amabro Bintang Inovasi
             </span>
           </div>
         </Link>

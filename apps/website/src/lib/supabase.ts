@@ -11,3 +11,5 @@ export const isSupabaseConfigured = Boolean(
 
 // Anonymous client: strictly restricted by RLS (only read published site_* rows)
 export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = supabasePublic;
+

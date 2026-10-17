@@ -14,319 +14,316 @@ import {
   Users, 
   ChevronRight,
   Building,
-  Sparkles
+  Sparkles,
+  Package,
+  Layers
 } from 'lucide-react';
+import { FALLBACK_PRODUCTS } from '@/lib/products';
 
 export default function HomePage() {
+  const featuredProducts = FALLBACK_PRODUCTS.slice(0, 6);
+
   const coreServices = [
     {
-      title: 'PLC & HMI Automation Systems',
-      description: 'Pemrograman logic control, upgrade sistem legacy (S7-300 ke S7-1500), dan perancangan antarmuka layar sentuh HMI responsif.',
-      icon: Cpu,
+      title: 'Solusi Instrumentasi & Kalibrasi',
+      description: 'Pengadaan transmitter tekanan diferensial (DP), flowmeter Coriolis/ultrasonic, level radar, dan analyzer cairan bergaransi resmi.',
+      icon: Gauge,
       color: 'bg-blue-600',
     },
     {
-      title: 'SCADA & Industrial IoT',
-      description: 'Monitoring visual proses pabrik secara real-time, pencatatan data historis, alarm manajemen, dan integrasi reporting database industri.',
-      icon: MonitorCheck,
+      title: 'Control Valve & Smart Positioner',
+      description: 'Supply dan retrofitting elektro-pneumatik valve positioner (Rotork, ABB TZIDC, Siemens SIPART, Azbil) untuk presisi aliran fluida.',
+      icon: Settings2,
       color: 'bg-indigo-600',
     },
     {
-      title: 'Inverter (VFD) & Motion Control',
-      description: 'Pengaturan kecepatan motor listrik, penghematan energi hingga 30%, serta sinkronisasi servo multi-axis presisi tinggi.',
+      title: 'Heavy Duty Pressure Switches & Interlock',
+      description: 'Pengadaan switch tekanan SOR (Explosion-proof, hermetically sealed) untuk perlindungan trip turbin boiler dan tangki gas.',
       icon: Zap,
       color: 'bg-purple-600',
     },
     {
-      title: 'Robotika & Packaging Otomatis',
-      description: 'Integrasi lengan robot palletizing, pick-and-place kecepatan tinggi, dan sistem konveyor pintar untuk industri kemasan & makanan.',
-      icon: Bot,
+      title: 'Handheld Field Communicator',
+      description: 'Device communicator portabel Emerson AMS Trex, HART 475, dan Yokogawa BT200 untuk teknisi instrumen di area hazardous.',
+      icon: Cpu,
       color: 'bg-teal-600',
     },
     {
-      title: 'Panel Kontrol & Switchgear Listrik',
-      description: 'Perakitan panel PLC, MCC (Motor Control Center), dan panel distribusi standar IP54/IP65 dengan komponen proteksi bersertifikasi.',
-      icon: Settings2,
+      title: 'Sistem PLC & Integrasi SCADA',
+      description: 'Arsitektur kontrol logika terprogram, integrasi komunikasi Modbus/Profibus/HART, dan monitoring HMI/SCADA proses pabrik.',
+      icon: MonitorCheck,
       color: 'bg-slate-800',
     },
     {
-      title: 'Sensor & Instrumentasi Proses',
-      description: 'Supply transmitter tekanan, level tanki, flowmeter cairan, dan safety light curtain area berbahaya (Hazardous / Explosion Proof).',
-      icon: Gauge,
+      title: 'Mechanical Engineering & Piping Support',
+      description: 'Pengadaan manifold, fitting instrumen stainless steel, diaphragm seal, dan instalasi mekanikal tahan korosi.',
+      icon: Bot,
       color: 'bg-rose-600',
     },
   ];
 
   const brands = [
-    'Siemens Automation',
-    'Omron Electronics',
-    'Schneider Electric',
-    'Delta Electronics',
-    'Mitsubishi Electric',
+    'Emerson / Rosemount',
+    'Yokogawa',
+    'ABB',
+    'Azbil',
     'Endress+Hauser',
+    'SOR Controls',
+    'Siemens',
+    'Honeywell',
+    'Rotork',
+    'Fisher / Masoneilan',
   ];
 
-  const featuredProjects = [
-    {
-      title: 'Upgrade PLC Siemens S7-1500 & SCADA WinCC',
-      client: 'Industri Makanan & Minuman (F&B)',
-      location: 'Cikarang, Jawa Barat',
-      impact: 'Peningkatan throughput lini packaging sebesar 24% tanpa downtime tak terduga.',
-    },
-    {
-      title: 'Retrofit Inverter VFD 75kW Clinker Cooler',
-      client: 'Pabrik Semen Terkemuka',
-      location: 'Tuban, Jawa Timur',
-      impact: 'Efisiensi konsumsi daya motor blower sebesar 28.5% per bulan.',
-    },
-    {
-      title: 'Integrasi Robot Palletizer & Safety Cage',
-      client: 'Pabrik Biskuit & Consumer Goods',
-      location: 'Tangerang, Banten',
-      impact: 'Kapasitas palletizing otomatis 20 kardus/menit dengan standar safety ISO 13849.',
-    },
+  const clientSuccess = [
+    { name: 'PLN Indonesia Power', desc: 'Pembangkit Listrik Tenaga Uap & Gas' },
+    { name: 'PLN Nusantara Power', desc: 'Penyedia Energi Listrik Nasional' },
+    { name: 'PT Indah Kiat Pulp & Paper', desc: 'Industri Pulp & Kertas Skala Global' },
+    { name: 'TJB Power Services', desc: 'Pembangkit Listrik Tanjung Jati B' },
+    { name: 'SIG (Semen Indonesia Group)', desc: 'Produsen Bahan Bangunan & Semen Terbesar' },
+    { name: 'Star Energy Geothermal', desc: 'Pembangkit Listrik Tenaga Panas Bumi' },
+    { name: 'PT Pupuk Indonesia (Holding)', desc: 'Industri Pupuk & Petrokimia Nasional' },
+    { name: 'PT Sumba Manis', desc: 'Industri Agribisnis & Pengolahan Gula' },
   ];
 
   return (
     <div className="space-y-20 pb-20">
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white pt-16 sm:pt-24 pb-20 sm:pb-32 px-4 sm:px-6">
-        {/* Background glow decoration */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-500/15 blur-[120px] rounded-full pointer-events-none"></div>
 
         <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/20 text-blue-300 px-3.5 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm">
             <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-            Sistem Integrator Resmi & Industrial Automation Supply
+            PT. Amabro Bintang Inovasi &bull; Solusi Instrumentasi, Mechanical & Valve
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-white">
-            Solusi Otomasi Industri & Supply Komponen Pabrik Terpercaya
+            Solusi Instrumentasi Proses, Valve & Otomasi Industri Terpercaya
           </h1>
 
           <p className="text-sm sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Mulai dari perancangan arsitektur PLC, SCADA, instalasi panel kontrol hingga pengadaan suku cadang resmi bergaransi untuk kelancaran operasional pabrik Anda.
+            Mitra pengadaan resmi komponen instrumen presisi, positioner katup kontrol, dan sistem otomasi pabrik berstandar internasional dengan garansi pabrikan resmi.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
-              href="/minta-penawaran"
+              href="/produk"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm px-6 py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all"
             >
-              Minta Surat Penawaran Resmi <ArrowRight className="w-4 h-4" />
+              Lihat Katalog Produk <ArrowRight className="w-4 h-4" />
             </Link>
 
             <Link
-              href="/portofolio"
+              href="/minta-penawaran"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm px-6 py-3.5 rounded-xl border border-slate-700 transition-colors"
             >
-              Lihat Proyek Kami
+              Minta Surat Penawaran (RFQ)
             </Link>
           </div>
 
           {/* Key metric highlights */}
           <div className="pt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto text-left border-t border-slate-800/80">
             <div>
-              <div className="text-2xl font-black text-white font-mono">150+</div>
-              <p className="text-xs text-slate-400 mt-0.5">Proyek Berhasil</p>
+              <div className="text-2xl font-black text-white font-mono">Est. 2018</div>
+              <p className="text-xs text-slate-400 mt-0.5">Pengalaman Industri</p>
             </div>
             <div>
               <div className="text-2xl font-black text-white font-mono">100%</div>
-              <p className="text-xs text-slate-400 mt-0.5">Komponen Resmi</p>
+              <p className="text-xs text-slate-400 mt-0.5">Produk Asli Bergaransi</p>
             </div>
             <div>
-              <div className="text-2xl font-black text-white font-mono">12 Bln</div>
-              <p className="text-xs text-slate-400 mt-0.5">Garansi Servis</p>
+              <div className="text-2xl font-black text-white font-mono">COO & Test</div>
+              <p className="text-xs text-slate-400 mt-0.5">Sertifikasi Kalibrasi</p>
             </div>
             <div>
               <div className="text-2xl font-black text-white font-mono">24/7</div>
-              <p className="text-xs text-slate-400 mt-0.5">Emergency Support</p>
+              <p className="text-xs text-slate-400 mt-0.5">Engineering Support</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* BRAND & MANUFACTURER SHOWCASE */}
+      {/* BRAND & PARTNERS SHOWCASE */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6">
         <p className="text-center text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">
-          Didukung oleh Brand & Prinsipal Komponen Otomasi Kelas Dunia
+          Didukung oleh Brand & Prinsipal Kelas Dunia (Rosemount, Yokogawa, ABB, Azbil, E+H, SOR, Siemens, Rotork)
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 opacity-80">
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-slate-600 font-bold text-sm">
           {brands.map((b, i) => (
-            <div key={i} className="text-sm font-black text-slate-600 tracking-tight">
+            <div key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg hover:border-blue-400 transition-colors">
               {b}
             </div>
           ))}
         </div>
       </section>
 
-      {/* CORE SERVICES SECTION */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-xs font-bold uppercase text-blue-600 tracking-wider">
-            Solusi Menyeluruh
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Layanan Rekayasa & Pengadaan Komponen
-          </h2>
-          <p className="text-slate-500 text-xs sm:text-sm">
-            Kami menghadirkan integrasi sistem end-to-end dengan dukungan engineer tersertifikasi dan garansi resmi.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coreServices.map((svc, i) => {
-            const Icon = svc.icon;
-            return (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:border-blue-400 hover:shadow-md transition-all flex flex-col justify-between space-y-4 group"
-              >
-                <div className="space-y-3">
-                  <div className={`w-12 h-12 rounded-xl ${svc.color} text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform`}>
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-base">
-                    {svc.title}
-                  </h3>
-                  <p className="text-slate-600 text-xs leading-relaxed">
-                    {svc.description}
-                  </p>
-                </div>
-
-                <Link
-                  href="/layanan"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 group-hover:text-blue-800 transition-colors pt-2"
-                >
-                  Detail Solusi <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* VALUE PROPOSITION / MENGAPA KAMI */}
-      <section className="bg-slate-100 py-16 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-4">
-            <span className="text-xs font-bold uppercase text-blue-600 tracking-wider">
-              Komitmen Kualitas
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Mengapa Perusahaan Manufaktur Memilih PT Automation Solusi?
-            </h2>
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-              Kami memahami bahwa henti produksi (*downtime*) akibat sistem kontrol yang usang sangat merugikan bisnis Anda. Kami hadir dengan pendekatan rekayasa presisi dan transparansi komersial.
-            </p>
-
-            <div className="space-y-3 pt-2 text-xs text-slate-700">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Komponen Resmi Asli 100%:</strong> Seluruh hardware dipasok dari distributor resmi dengan garansi resmi pabrik.</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Dokumentasi Lengkap:</strong> Kami menyediakan wiring diagram CAD, backup program, dan manual operasional lengkap.</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Commissioning & Testing Aman:</strong> Uji fungsi menyeluruh (FAT & SAT) untuk menjamin keselamatan operator dan mesin.</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
-            <h3 className="font-bold text-slate-900 text-base">Alur Kerja Pengadaan Kami</h3>
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center shrink-0">1</span>
-                <div>
-                  <h4 className="font-bold text-slate-900">Inquiry & Analisis Kebutuhan</h4>
-                  <p className="text-slate-500 text-[11px]">Survei spesifikasi teknis dan kelayakan sistem eksisting.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">2</span>
-                <div>
-                  <h4 className="font-bold text-slate-900">Penawaran Resmi & Sourcing</h4>
-                  <p className="text-slate-500 text-[11px]">Penyusunan penawaran harga kompetitif bergaransi dengan approval Owner.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0">3</span>
-                <div>
-                  <h4 className="font-bold text-slate-900">Implementasi & Garansi Servis</h4>
-                  <p className="text-slate-500 text-[11px]">Pengiriman aman, instalasi on-site, dan dukungan pemeliharaan berkala.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURED PROJECTS */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      {/* FEATURED PRODUCTS SHOWCASE */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
-            <span className="text-xs font-bold uppercase text-blue-600 tracking-wider">
-              Studi Kasus Nyata
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-              Portofolio Proyek Terkini
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1 flex items-center gap-1.5">
+              <Package className="w-4 h-4" /> Katalog Unggulan
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Produk Instrumentasi & Valve Pilihan
             </h2>
           </div>
+
           <Link
-            href="/portofolio"
-            className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            href="/produk"
+            className="inline-flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
           >
-            Lihat Semua Portofolio <ArrowRight className="w-3.5 h-3.5" />
+            Lihat Semua Produk ({FALLBACK_PRODUCTS.length}+) <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredProjects.map((p, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredProducts.map((p) => (
             <div
-              key={idx}
-              className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4 hover:border-blue-400 transition-all flex flex-col justify-between"
+              key={p.id}
+              className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group"
             >
-              <div className="space-y-2">
-                <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 inline-block">
-                  {p.client}
-                </span>
-                <h3 className="font-bold text-slate-900 text-sm leading-snug">
-                  {p.title}
-                </h3>
-                <p className="text-[11px] text-slate-500 flex items-center gap-1">
-                  <Building className="w-3 h-3 text-slate-400" /> {p.location}
-                </p>
-                <div className="pt-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 leading-relaxed">
-                  <strong>Hasil / Dampak:</strong> {p.impact}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                    {p.brand}
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {p.category}
+                  </span>
                 </div>
+
+                <h3 className="font-bold text-slate-900 text-base group-hover:text-blue-600 transition-colors leading-snug">
+                  {p.name}
+                </h3>
+
+                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                  {p.short_description}
+                </p>
+
+                {p.specifications && (
+                  <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-[11px] space-y-1">
+                    {Object.entries(p.specifications).slice(0, 2).map(([k, v]) => (
+                      <div key={k} className="flex justify-between">
+                        <span className="text-slate-500">{k}:</span>
+                        <span className="font-semibold text-slate-800 truncate max-w-[170px]">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between">
+                <Link
+                  href={`/produk/${p.slug}`}
+                  className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                >
+                  Detail <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+
+                <Link
+                  href={`/minta-penawaran?product=${encodeURIComponent(p.name)}&brand=${encodeURIComponent(p.brand)}`}
+                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors"
+                >
+                  Minta RFQ
+                </Link>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* FINAL CALL TO ACTION (CTA) */}
+      {/* CORE SERVICES */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 text-white rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-xl">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-            Siap Mengoptimalkan Efisiensi Lini Produksi Anda?
+        <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+          <div className="text-xs font-bold uppercase tracking-wider text-blue-600">
+            Bidang Kompetensi
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Layanan & Solusi Rekayasa Otomasi
           </h2>
-          <p className="text-sm sm:text-base text-blue-100 max-w-xl mx-auto leading-relaxed">
-            Kirimkan kebutuhan otomasi pabrik Anda melalui form permintaan penawaran. Tim engineering kami akan merespons dengan surat penawaran resmi dan rincian spesifikasi terbaik.
+          <p className="text-slate-600 text-xs sm:text-sm">
+            Dukungan menyeluruh mulai dari studi kelayakan teknis, pengadaan instrumen, instalasi lapangan, hingga kalibrasi dan purnajual.
           </p>
-          <div className="pt-2">
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {coreServices.map((srv, idx) => {
+            const Icon = srv.icon;
+            return (
+              <div
+                key={idx}
+                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-400 hover:shadow-md transition-all space-y-3"
+              >
+                <div className={`w-10 h-10 rounded-xl ${srv.color} text-white flex items-center justify-center`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-base">{srv.title}</h3>
+                <p className="text-slate-600 text-xs leading-relaxed">{srv.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* CLIENT REFERENCES (SUCCESS STORY FROM PDF) */}
+      <section className="bg-slate-50 py-16 border-y border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-600">
+              Klien & Pengalaman Proyek
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Dipercaya oleh Sektor Pembangkit & Industri Terkemuka
+            </h2>
+            <p className="text-slate-600 text-xs sm:text-sm">
+              Rekam jejak supply instrumen dan mechanical engineering PT. Amabro Bintang Inovasi pada BUMN dan korporasi multinasional.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {clientSuccess.map((cl, idx) => (
+              <div 
+                key={idx}
+                className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs text-center space-y-1 hover:border-blue-300 transition-colors"
+              >
+                <div className="font-bold text-slate-900 text-xs sm:text-sm">{cl.name}</div>
+                <p className="text-[11px] text-slate-500">{cl.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA SECTION */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-3xl p-8 sm:p-14 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 max-w-xl text-center md:text-left">
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+              Siap Meningkatkan Keandalan & Efisiensi Sistem Pabrik Anda?
+            </h2>
+            <p className="text-blue-100 text-xs sm:text-sm">
+              Konsultasikan kebutuhan instrumen, transmitter, atau valve positioner dengan tim engineering PT. Amabro Bintang Inovasi.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
             <Link
               href="/minta-penawaran"
-              className="inline-flex items-center gap-2 bg-white text-slate-950 hover:bg-slate-100 font-extrabold text-sm px-8 py-4 rounded-xl shadow-md hover:scale-105 transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-700 hover:bg-blue-50 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl shadow-md transition-all"
             >
-              Minta Surat Penawaran Sekarang <ArrowRight className="w-4 h-4" />
+              Minta Surat Penawaran (RFQ) <ArrowRight className="w-4 h-4" />
             </Link>
+
+            <a
+              href="https://wa.me/6281315333391"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-800/80 hover:bg-blue-900 text-white text-xs sm:text-sm font-semibold px-6 py-3.5 rounded-xl border border-blue-400/30 transition-all"
+            >
+              Hubungi via WhatsApp
+            </a>
           </div>
         </div>
       </section>
