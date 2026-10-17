@@ -59,6 +59,11 @@ export const Quotations: React.FC = () => {
     notes: '',
   });
 
+  // Sales Price Adjustment Modal
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [selectedItemForPrice, setSelectedItemForPrice] = useState<QuotationItem | null>(null);
+  const [newUnitPriceInput, setNewUnitPriceInput] = useState<number>(0);
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -173,6 +178,49 @@ export const Quotations: React.FC = () => {
       loadData();
     } catch (err: any) {
       alert(err.message || 'Gagal mencatat negosiasi');
+    }
+  };
+
+  const handleOpenPriceModal = (item: QuotationItem) => {
+    setSelectedItemForPrice(item);
+    setNewUnitPriceInput(item.unit_price);
+    setShowPriceModal(true);
+  };
+
+  const handleSaveItemPrice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedQuotation || !selectedItemForPrice) return;
+
+    try {
+      const updatedTotals = await quotationService.updateItemPrice(
+        selectedQuotation.id,
+        selectedItemForPrice.id,
+        newUnitPriceInput
+      );
+
+      setQuotationItems((prev) =>
+        prev.map((it) =>
+          it.id === selectedItemForPrice.id
+            ? { ...it, unit_price: newUnitPriceInput, total_price: newUnitPriceInput * it.quantity }
+            : it
+        )
+      );
+
+      setSelectedQuotation((prev) =>
+        prev
+          ? {
+              ...prev,
+              subtotal: updatedTotals.subtotal,
+              tax_amount: updatedTotals.tax_amount,
+              grand_total: updatedTotals.grand_total,
+            }
+          : prev
+      );
+
+      setShowPriceModal(false);
+      alert('Harga jual resmi berhasil diperbarui oleh Sales!');
+    } catch (err: any) {
+      alert(err.message || 'Gagal mengubah harga jual');
     }
   };
 
@@ -463,7 +511,17 @@ export const Quotations: React.FC = () => {
                       {it.quantity} {it.unit}
                     </td>
                     <td className="p-3 text-right font-semibold text-slate-800 whitespace-nowrap font-mono">
-                      Rp {it.unit_price.toLocaleString('id-ID')}
+                      <div className="flex items-center justify-end gap-2">
+                        <span>Rp {it.unit_price.toLocaleString('id-ID')}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPriceModal(it)}
+                          className="print:hidden inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 transition-colors cursor-pointer shadow-2xs"
+                          title="Sales berhak mengedit harga jual resmi (harga purchasing hanya rekomendasi)"
+                        >
+                          <Edit className="w-3 h-3" /> Edit Harga
+                        </button>
+                      </div>
                     </td>
                     {viewMode === 'internal' && (
                       <>
@@ -745,6 +803,84 @@ export const Quotations: React.FC = () => {
                   className="px-4 py-2 rounded-lg text-xs font-semibold bg-purple-700 hover:bg-purple-800 text-white"
                 >
                   Simpan Hasil Negosiasi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Harga Jual oleh Sales */}
+      {showPriceModal && selectedItemForPrice && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                <Edit className="w-4 h-4 text-blue-600" /> Edit Harga Jual Penawaran
+              </h3>
+              <button
+                onClick={() => setShowPriceModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1">
+              <p className="font-bold flex items-center gap-1">
+                💡 Wewenang Fleksibilitas Sales:
+              </p>
+              <p className="text-[11px] text-blue-800 leading-relaxed">
+                Harga modal dan kalkulasi dari purchasing hanyalah <strong>sebatas saran / rekomendasi dasar</strong>. Tim Sales berhak penuh menentukan dan mengubah harga jual akhir yang diajukan ke customer.
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveItemPrice} className="space-y-4 text-xs">
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400">Komponen / Barang:</span>
+                <p className="font-bold text-slate-900 text-xs">{selectedItemForPrice.item_name}</p>
+                <p className="text-[11px] text-slate-500">Jumlah: {selectedItemForPrice.quantity} {selectedItemForPrice.unit}</p>
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">
+                  Harga Jual Satuan Baru (IDR) *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-slate-400 font-mono font-bold text-xs">Rp</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1000}
+                    required
+                    value={newUnitPriceInput}
+                    onChange={(e) => setNewUnitPriceInput(Number(e.target.value))}
+                    className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 font-mono font-bold text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Masukkan harga satuan baru"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center text-xs">
+                <span className="text-slate-600">Total Harga Item (Qty × Satuan):</span>
+                <span className="font-mono font-bold text-slate-900 text-sm">
+                  Rp {(newUnitPriceInput * selectedItemForPrice.quantity).toLocaleString('id-ID')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowPriceModal(false)}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-colors shadow-xs"
+                >
+                  Simpan Harga Jual
                 </button>
               </div>
             </form>

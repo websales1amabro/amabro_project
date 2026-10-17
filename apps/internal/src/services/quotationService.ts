@@ -322,6 +322,80 @@ export const quotationService = {
     }
   },
 
+  async updateItemPrice(
+    quotationId: string,
+    itemId: string,
+    newUnitPrice: number
+  ): Promise<{ subtotal: number; tax_amount: number; grand_total: number }> {
+    if (isSupabaseConfigured) {
+      try {
+        await supabase
+          .from('quotation_items')
+          .update({
+            unit_price: newUnitPrice,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', itemId);
+
+        const { data: allItems } = await supabase
+          .from('quotation_items')
+          .select('quantity, unit_price')
+          .eq('quotation_id', quotationId)
+          .is('deleted_at', null);
+
+        const newSubtotal = (allItems || []).reduce(
+          (acc, it) => acc + (it.unit_price * it.quantity),
+          0
+        );
+        const taxRate = 11.0;
+        const newTaxAmount = (newSubtotal * taxRate) / 100;
+        const newGrandTotal = newSubtotal + newTaxAmount;
+
+        await supabase
+          .from('quotations')
+          .update({
+            subtotal: newSubtotal,
+            tax_amount: newTaxAmount,
+            grand_total: newGrandTotal,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', quotationId);
+
+        return { subtotal: newSubtotal, tax_amount: newTaxAmount, grand_total: newGrandTotal };
+      } catch (e) {
+        console.warn('Supabase updateItemPrice error:', e);
+      }
+    }
+
+    // Local fallback
+    const items = getStoredQuotationItems();
+    const itIdx = items.findIndex((it) => it.id === itemId);
+    if (itIdx !== -1) {
+      items[itIdx].unit_price = newUnitPrice;
+      items[itIdx].total_price = newUnitPrice * items[itIdx].quantity;
+      items[itIdx].updated_at = new Date().toISOString();
+      saveStoredQuotationItems(items);
+    }
+
+    const quoItems = items.filter((it) => it.quotation_id === quotationId);
+    const newSubtotal = quoItems.reduce((acc, it) => acc + (it.unit_price * it.quantity), 0);
+    const taxRate = 11.0;
+    const newTaxAmount = (newSubtotal * taxRate) / 100;
+    const newGrandTotal = newSubtotal + newTaxAmount;
+
+    const quotes = getStoredQuotations();
+    const qIdx = quotes.findIndex((q) => q.id === quotationId);
+    if (qIdx !== -1) {
+      quotes[qIdx].subtotal = newSubtotal;
+      quotes[qIdx].tax_amount = newTaxAmount;
+      quotes[qIdx].grand_total = newGrandTotal;
+      quotes[qIdx].updated_at = new Date().toISOString();
+      saveStoredQuotations(quotes);
+    }
+
+    return { subtotal: newSubtotal, tax_amount: newTaxAmount, grand_total: newGrandTotal };
+  },
+
   async ensureQuotationForInquiry(
     inquiry: Inquiry,
     items: InquiryItem[],

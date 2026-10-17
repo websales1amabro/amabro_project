@@ -234,6 +234,61 @@ export const vendorQuoteService = {
     saveStoredQuotes(quotes);
   },
 
+  async updateVendorQuote(quoteId: string, updates: {
+    unit_price: number;
+    currency?: string;
+    exchange_rate?: number;
+    lead_time_days?: number;
+    warranty_period?: string;
+    validity_date?: string;
+    payment_terms?: string;
+    quote_reference?: string;
+    notes?: string;
+  }): Promise<void> {
+    const unitPriceIdr = updates.unit_price * (updates.exchange_rate || 1);
+    if (isSupabaseConfigured) {
+      try {
+        await supabase
+          .from('vendor_quotes')
+          .update({
+            unit_price: updates.unit_price,
+            currency: updates.currency || 'IDR',
+            exchange_rate: updates.exchange_rate || 1,
+            unit_price_idr: unitPriceIdr,
+            lead_time_days: updates.lead_time_days,
+            warranty_period: updates.warranty_period,
+            validity_date: updates.validity_date,
+            payment_terms: updates.payment_terms,
+            quote_reference: updates.quote_reference,
+            notes: updates.notes,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', quoteId);
+      } catch (e) {
+        console.warn('Supabase updateVendorQuote error:', e);
+      }
+    }
+
+    const quotes = getStoredQuotes();
+    const idx = quotes.findIndex((q) => q.id === quoteId);
+    if (idx !== -1) {
+      quotes[idx] = {
+        ...quotes[idx],
+        unit_price: updates.unit_price,
+        currency: updates.currency || 'IDR',
+        exchange_rate: updates.exchange_rate || 1,
+        unit_price_idr: unitPriceIdr,
+        lead_time_days: updates.lead_time_days ?? quotes[idx].lead_time_days,
+        warranty_period: updates.warranty_period ?? quotes[idx].warranty_period,
+        payment_terms: updates.payment_terms ?? quotes[idx].payment_terms,
+        quote_reference: updates.quote_reference ?? quotes[idx].quote_reference,
+        notes: updates.notes ?? quotes[idx].notes,
+        updated_at: new Date().toISOString(),
+      };
+      saveStoredQuotes(quotes);
+    }
+  },
+
   async deleteVendorQuote(quoteId: string): Promise<void> {
     if (isSupabaseConfigured) {
       await supabase.from('vendor_quotes').delete().eq('id', quoteId);

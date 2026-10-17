@@ -22,7 +22,8 @@ import {
   Percent,
   ShieldCheck,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Edit
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { inquiryService } from '../services/inquiryService';
@@ -192,8 +193,41 @@ export const InquiryDetail: React.FC = () => {
     }
   };
 
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+
   const handleOpenQuoteModal = (itemId: string) => {
+    setEditingQuoteId(null);
     setSelectedItemIdForQuote(itemId);
+    setQuoteFormData({
+      vendor_id: vendors.length > 0 ? vendors[0].id : '',
+      unit_price: 0,
+      currency: 'IDR',
+      exchange_rate: 1,
+      lead_time_days: 7,
+      warranty_period: '12 Bulan',
+      validity_date: '',
+      payment_terms: 'Tempo 30 Hari',
+      quote_reference: '',
+      notes: '',
+    });
+    setShowQuoteModal(true);
+  };
+
+  const handleOpenEditQuoteModal = (quote: VendorQuote) => {
+    setEditingQuoteId(quote.id);
+    setSelectedItemIdForQuote(quote.item_id);
+    setQuoteFormData({
+      vendor_id: quote.vendor_id,
+      unit_price: quote.unit_price,
+      currency: quote.currency || 'IDR',
+      exchange_rate: quote.exchange_rate || 1,
+      lead_time_days: quote.lead_time_days || 7,
+      warranty_period: quote.warranty_period || '12 Bulan',
+      validity_date: quote.validity_date || '',
+      payment_terms: quote.payment_terms || 'Tempo 30 Hari',
+      quote_reference: quote.quote_reference || '',
+      notes: quote.notes || '',
+    });
     setShowQuoteModal(true);
   };
 
@@ -207,6 +241,24 @@ export const InquiryDetail: React.FC = () => {
     const selectedVendor = vendors.find((v) => v.id === quoteFormData.vendor_id);
 
     try {
+      if (editingQuoteId) {
+        await vendorQuoteService.updateVendorQuote(editingQuoteId, {
+          unit_price: Number(quoteFormData.unit_price),
+          currency: quoteFormData.currency,
+          exchange_rate: Number(quoteFormData.exchange_rate) || 1,
+          lead_time_days: Number(quoteFormData.lead_time_days) || undefined,
+          warranty_period: quoteFormData.warranty_period,
+          validity_date: quoteFormData.validity_date || undefined,
+          payment_terms: quoteFormData.payment_terms,
+          quote_reference: quoteFormData.quote_reference,
+          notes: quoteFormData.notes,
+        });
+        setShowQuoteModal(false);
+        setEditingQuoteId(null);
+        loadAllData();
+        return;
+      }
+
       await vendorQuoteService.addVendorQuote({
         inquiry_id: inquiry.id,
         item_id: selectedItemIdForQuote,
@@ -699,20 +751,33 @@ export const InquiryDetail: React.FC = () => {
                                 </td>
 
                                 <td className="p-3 text-center">
-                                  {q.is_selected ? (
-                                    <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
-                                      <CheckCircle className="w-3.5 h-3.5" /> Terpilih
-                                    </span>
-                                  ) : canManageVendors ? (
-                                    <button
-                                      onClick={() => handleSelectQuote(it.id, q.id)}
-                                      className="text-xs text-slate-600 hover:text-emerald-700 font-semibold bg-slate-100 hover:bg-emerald-50 px-2.5 py-1 rounded border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer"
-                                    >
-                                      Pilih Ini
-                                    </button>
-                                  ) : (
-                                    <span className="text-slate-400 text-xs">-</span>
-                                  )}
+                                  <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                                    {q.is_selected ? (
+                                      <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                                        <CheckCircle className="w-3.5 h-3.5" /> Terpilih
+                                      </span>
+                                    ) : canManageVendors ? (
+                                      <button
+                                        onClick={() => handleSelectQuote(it.id, q.id)}
+                                        className="text-xs text-slate-600 hover:text-emerald-700 font-semibold bg-slate-100 hover:bg-emerald-50 px-2.5 py-1 rounded border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer"
+                                      >
+                                        Pilih Ini
+                                      </button>
+                                    ) : (
+                                      <span className="text-slate-400 text-xs">-</span>
+                                    )}
+
+                                    {canManageVendors && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenEditQuoteModal(q)}
+                                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded border border-purple-200 transition-colors cursor-pointer shadow-2xs"
+                                        title="Edit & Perbarui Harga Satuan atau Kondisi Terakhir Penawaran Vendor Ini"
+                                      >
+                                        <Edit className="w-3 h-3" /> Edit Harga
+                                      </button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -1057,7 +1122,7 @@ export const InquiryDetail: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="font-bold text-slate-900 text-base">
-              Input Harga Penawaran Vendor (V3 RFQ)
+              {editingQuoteId ? 'Update / Edit Harga Penawaran Vendor' : 'Input Harga Penawaran Vendor (V3 RFQ)'}
             </h3>
 
             <form onSubmit={handleSaveQuote} className="space-y-3 text-xs">
@@ -1172,9 +1237,9 @@ export const InquiryDetail: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white"
+                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white cursor-pointer transition-colors shadow-xs"
                 >
-                  Simpan Penawaran Vendor
+                  {editingQuoteId ? 'Simpan Pembaruan Harga' : 'Simpan Penawaran Vendor'}
                 </button>
               </div>
             </form>
