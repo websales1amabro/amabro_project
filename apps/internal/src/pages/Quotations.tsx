@@ -403,32 +403,34 @@ export const Quotations: React.FC = () => {
       )}
 
       {/* DOCUMENT PREVIEW CANVAS (Standard A4 Page Format) */}
-      <div className="bg-white rounded-xl border border-slate-300 shadow-sm p-8 sm:p-12 max-w-4xl mx-auto space-y-8 font-sans print:border-none print:shadow-none print:p-0 print:max-w-none">
+      <div className="quotation-sheet bg-white rounded-xl border border-slate-300 shadow-sm p-8 sm:p-12 max-w-4xl mx-auto space-y-8 font-sans print:border-none print:shadow-none print:p-0 print:max-w-none print:space-y-6">
         
-        {/* Letterhead (Kop Surat Resmi) */}
-        <div className="flex items-start justify-between border-b-2 border-slate-800 pb-6">
+        {/* Letterhead (Kop Surat Resmi PT. Amabro Bintang Inovasi) */}
+        <div className="flex items-center justify-between border-b-2 border-slate-900 pb-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-blue-700 text-white font-black flex items-center justify-center text-2xl shadow-sm print:border print:border-slate-800">
-              ASF
-            </div>
+            <img 
+              src="/amabro-logo.png" 
+              alt="PT. Amabro Bintang Inovasi" 
+              className="h-14 sm:h-16 w-auto object-contain print:h-14" 
+            />
             <div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight tracking-wide">
-                PT AUTOMATION SOLUSI NUSANTARA
+              <h2 className="text-base sm:text-xl font-black text-slate-900 leading-tight tracking-wide uppercase">
+                PT. AMABRO BINTANG INOVASI
               </h2>
-              <p className="text-xs font-semibold text-slate-700">
-                Industrial Automation Systems, Robotics & Electrical Engineering
+              <p className="text-[11px] font-semibold text-slate-700">
+                Industrial Automation Systems, Instrumentation & Electrical Solutions
               </p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Kawasan Industri MM2100, Cikarang Barat, Bekasi 17530 | Telp: (021) 8990-1234
+              <p className="text-[10px] text-slate-600 mt-0.5 leading-snug">
+                Plaza Aminta Lt 5/504, Jl TB Simatupang Kav 10, Jakarta Selatan - DKI Jakarta - Indonesia 12310
               </p>
-              <p className="text-[11px] text-slate-500">
-                Email: sales@automationsolusi.co.id | Website: www.automationsolusi.co.id
+              <p className="text-[10px] text-slate-600 leading-snug">
+                Phone: 021-2292-0544 | Email: info@amabroindonesia.com | Website: www.amabroindonesia.com
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight uppercase">
+            <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight uppercase">
               {viewMode === 'internal' ? 'INTERNAL CONTROL QUOTATION' : 'SURAT PENAWARAN HARGA'}
             </h3>
             <p className="font-mono text-sm font-bold text-blue-700 mt-0.5">
@@ -591,27 +593,18 @@ export const Quotations: React.FC = () => {
           </ol>
         </div>
 
-        {/* Signatures Block */}
-        <div className="pt-8 border-t border-slate-200 grid grid-cols-2 gap-12 text-center text-xs">
-          <div className="space-y-16">
+        {/* Signatures Block: Cukup 1 Orang (Sales Saja) */}
+        <div className="pt-8 border-t border-slate-200 flex justify-end text-center text-xs">
+          <div className="space-y-16 w-64">
             <div>
-              <p className="font-semibold text-slate-600">Dibuat & Diajukan Oleh:</p>
-              <p className="text-slate-400 text-[11px]">PT Automation Solusi Nusantara</p>
+              <p className="font-semibold text-slate-700">Hormat kami,</p>
+              <p className="font-bold text-slate-900 uppercase">PT. AMABRO BINTANG INOVASI</p>
             </div>
             <div>
-              <p className="font-bold text-slate-900 underline">Rian Pratama, S.T.</p>
-              <p className="text-[11px] text-slate-500">Industrial Sales & Automation Engineer</p>
-            </div>
-          </div>
-
-          <div className="space-y-16">
-            <div>
-              <p className="font-semibold text-slate-600">Disetujui Oleh (Owner):</p>
-              <p className="text-slate-400 text-[11px]">Operational Director</p>
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 underline">Budi Santoso, M.T.</p>
-              <p className="text-[11px] text-slate-500">Direktur / Managing Partner</p>
+              <p className="font-bold text-slate-900 underline tracking-wide">
+                {selectedQuotation.inquiry?.assignee?.full_name || 'Rian Pratama, S.T.'}
+              </p>
+              <p className="text-[11px] text-slate-500">Sales Dept / Sales Engineer</p>
             </div>
           </div>
         </div>

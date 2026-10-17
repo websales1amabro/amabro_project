@@ -1386,13 +1386,15 @@ export const Transactions: React.FC = () => {
               <div className="bg-white p-10 max-w-3xl mx-auto shadow-sm border border-slate-200 text-slate-800 text-xs font-sans space-y-6">
                 {/* Header Kop */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4">
-                  <div>
-                    <h2 className="text-xl font-bold tracking-tight text-slate-900">PT AMABRO OTOMASI INDUSTRI</h2>
-                    <p className="text-[11px] text-slate-600 mt-0.5">
-                      Industrial Automation & Control Systems Engineering<br />
-                      Kawasan Industri Jababeka II, Cikarang, Bekasi, Jawa Barat<br />
-                      Email: sales@amabro.co.id | Telp: +62 21 8983 4567 | NPWP: 01.482.912.4-413.000
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <img src="/amabro-logo.png" alt="Amabro Logo" className="h-12 w-auto object-contain" />
+                    <div>
+                      <h2 className="text-xl font-bold tracking-tight text-slate-900">PT. AMABRO BINTANG INOVASI</h2>
+                      <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                        Plaza Aminta Lt 5/504, Jl TB Simatupang Kav 10, Jakarta Selatan - DKI Jakarta 12310<br />
+                        Phone: 021-2292-0544 | Email: info@amabroindonesia.com | Website: www.amabroindonesia.com
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <span className="text-base font-extrabold uppercase tracking-widest text-slate-900">

@@ -5,3 +5,62 @@
     @apply bg-slate-50 text-slate-900 antialiased font-sans;
   }
 }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 15mm 15mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10.5pt;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Sembunyikan sidebar, top header navigasi, button, dan elemen luar */
+  aside,
+  header,
+  nav,
+  .print\:hidden,
+  button,
+  [data-print-hidden="true"] {
+    display: none !important;
+  }
+
+  /* Reset layout wrapper aplikasi agar tidak tergeser ke kanan */
+  .min-h-screen,
+  .ml-64,
+  div[class*="ml-64"],
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-left: 0 !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Lembar Dokumen Resmi Penawaran (Quotation Sheet) */
+  .quotation-sheet {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+  }
+
+  a[href]:after {
+    content: none !important;
+  }
+}
