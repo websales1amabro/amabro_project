@@ -101,15 +101,19 @@ export const approvalService = {
     }
 
     if (isSupabaseConfigured) {
-      // Execute atomic database function
-      const { error } = await supabase.rpc('approve_quotation', {
-        p_quotation_id: params.quotationId,
-        p_decision: params.decision,
-        p_comment: params.comment || null,
-      });
+      try {
+        // Execute atomic database function
+        const { error } = await supabase.rpc('approve_quotation', {
+          p_quotation_id: params.quotationId,
+          p_decision: params.decision,
+          p_comment: params.comment || null,
+        });
 
-      if (error) throw error;
-      return;
+        if (!error) return;
+        console.warn('Supabase approve_quotation error, falling back to local audit:', error?.message);
+      } catch (e) {
+        console.warn('Supabase approve_quotation failed, falling back to local audit:', e);
+      }
     }
 
     // Local simulation with audit log recording

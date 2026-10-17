@@ -101,3 +101,14 @@ drop policy if exists "Read tax_invoices" on public.tax_invoices;
 drop policy if exists "Manage tax_invoices" on public.tax_invoices;
 drop policy if exists "Tax invoices policy" on public.tax_invoices;
 create policy "Tax invoices policy" on public.tax_invoices for all to authenticated, anon using (true) with check (true);
+
+-- 6. Commercial Analysis & Internal Quotations (Dev/Testing Permissive)
+drop policy if exists "Commercial analysis select" on public.commercial_analysis;
+drop policy if exists "Commercial analysis manage" on public.commercial_analysis;
+drop policy if exists "Commercial analysis policy" on public.commercial_analysis;
+create policy "Commercial analysis policy" on public.commercial_analysis for all to authenticated, anon using (true) with check (true);
+
+drop policy if exists "Internal quotations select" on public.internal_quotations;
+drop policy if exists "Internal quotations manage" on public.internal_quotations;
+drop policy if exists "Internal quotations policy" on public.internal_quotations;
+create policy "Internal quotations policy" on public.internal_quotations for all to authenticated, anon using (true) with check (true);

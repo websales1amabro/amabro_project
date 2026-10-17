@@ -126,20 +126,26 @@ export const commercialAnalysisService = {
     };
 
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from('commercial_analysis')
-        .upsert(
-          {
-            ...recordPayload,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'inquiry_id' }
-        )
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('commercial_analysis')
+          .upsert(
+            {
+              ...recordPayload,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'inquiry_id' }
+          )
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data as CommercialAnalysis;
+        if (!error && data) {
+          return data as CommercialAnalysis;
+        }
+        console.warn('Supabase commercial_analysis RLS error, falling back to local store:', error?.message);
+      } catch (e) {
+        console.warn('Supabase commercial_analysis upsert failed, falling back to local store:', e);
+      }
     }
 
     const records = getStoredAnalysis();

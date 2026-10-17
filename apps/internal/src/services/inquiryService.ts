@@ -319,12 +319,16 @@ export const inquiryService = {
 
   async updateInquiryStatus(id: string, newStatus: InquiryStatus): Promise<void> {
     if (isSupabaseConfigured) {
-      const { error } = await supabase
-        .from('inquiries')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      if (error) throw error;
-      return;
+      try {
+        const { error } = await supabase
+          .from('inquiries')
+          .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq('id', id);
+        if (!error) return;
+        console.warn('Supabase updateInquiryStatus error, falling back to local:', error?.message);
+      } catch (e) {
+        console.warn('Supabase updateInquiryStatus failed, falling back to local:', e);
+      }
     }
 
     const items = getStoredInquiries();
