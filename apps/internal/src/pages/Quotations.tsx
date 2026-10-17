@@ -180,8 +180,9 @@ export const Quotations: React.FC = () => {
     return <div className="text-center py-16 text-slate-400 text-xs">Memuat dokumen penawaran...</div>;
   }
 
-  const subtotal = quotationItems.reduce((acc, it) => acc + (it.total_price || it.unit_price * it.quantity), 0);
-  const taxAmount = subtotal * (selectedQuotation.tax_rate / 100);
+  const computedItemSubtotal = quotationItems.reduce((acc, it) => acc + (it.total_price || it.unit_price * it.quantity), 0);
+  const subtotal = computedItemSubtotal > 0 ? computedItemSubtotal : (selectedQuotation.subtotal || 0);
+  const taxAmount = (subtotal * (selectedQuotation.tax_rate || 11)) / 100;
   const grandTotal = subtotal + taxAmount;
   const grandTotalTerbilang = terbilang(grandTotal);
 

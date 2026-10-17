@@ -230,8 +230,6 @@ export const quotationService = {
         .is('deleted_at', null)
         .single();
 
-      if (quoError || !quo) return null;
-
       const { data: quoItems } = await supabase
         .from('quotation_items')
         .select('*')
@@ -239,9 +237,38 @@ export const quotationService = {
         .is('deleted_at', null)
         .order('item_no', { ascending: true });
 
+      let items = (quoItems || []) as QuotationItem[];
+
+      // Fallback: if quotation_items is empty, fetch and populate from inquiry_items
+      if (items.length === 0 && quo.inquiry_id) {
+        const { data: inqItems } = await supabase
+          .from('inquiry_items')
+          .select('*')
+          .eq('inquiry_id', quo.inquiry_id)
+          .is('deleted_at', null)
+          .order('item_no', { ascending: true });
+
+        if (inqItems && inqItems.length > 0) {
+          items = inqItems.map((it, idx) => ({
+            id: it.id,
+            quotation_id: quo.id,
+            item_no: idx + 1,
+            item_name: it.item_name,
+            specifications: it.specifications || '',
+            brand: it.brand || 'Amabro Partner',
+            quantity: it.quantity || 1,
+            unit: it.unit || 'Unit',
+            unit_price: Math.round((quo.subtotal || 0) / inqItems.length / (it.quantity || 1)),
+            total_price: Math.round((quo.subtotal || 0) / inqItems.length),
+            created_at: quo.created_at,
+            updated_at: quo.updated_at,
+          }));
+        }
+      }
+
       return {
         quotation: quo as Quotation,
-        items: (quoItems || []) as QuotationItem[],
+        items,
       };
     }
 
@@ -384,7 +411,6 @@ export const quotationService = {
               quantity: it.quantity,
               unit: it.unit,
               unit_price: Math.round(subtotal / items.length / (it.quantity || 1)),
-              total_price: Math.round(subtotal / items.length),
             }));
             await supabase.from('quotation_items').insert(quoItems);
           }

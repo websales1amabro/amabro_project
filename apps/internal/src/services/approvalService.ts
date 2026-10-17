@@ -100,19 +100,45 @@ export const approvalService = {
       throw new Error('Komentar wajib diisi apabila meminta revisi penawaran.');
     }
 
+    const nextQuoStatus = 
+      params.decision === 'approved' 
+        ? 'approved' 
+        : params.decision === 'revision_requested' 
+        ? 'revision_requested' 
+        : 'rejected';
+
+    const nextInqStatus = params.decision === 'approved' ? 'approved' : 'revision';
+
     if (isSupabaseConfigured) {
       try {
-        // Execute atomic database function
-        const { error } = await supabase.rpc('approve_quotation', {
+        // Direct update to Supabase quotations table
+        await supabase
+          .from('quotations')
+          .update({ status: nextQuoStatus, updated_at: new Date().toISOString() })
+          .eq('id', params.quotationId);
+
+        // Also update inquiry status
+        const { data: quoData } = await supabase
+          .from('quotations')
+          .select('inquiry_id')
+          .eq('id', params.quotationId)
+          .single();
+
+        if (quoData?.inquiry_id) {
+          await supabase
+            .from('inquiries')
+            .update({ status: nextInqStatus, updated_at: new Date().toISOString() })
+            .eq('id', quoData.inquiry_id);
+        }
+
+        // Attempt RPC for atomic logging
+        await supabase.rpc('approve_quotation', {
           p_quotation_id: params.quotationId,
           p_decision: params.decision,
           p_comment: params.comment || null,
         });
-
-        if (!error) return;
-        console.warn('Supabase approve_quotation error, falling back to local audit:', error?.message);
       } catch (e) {
-        console.warn('Supabase approve_quotation failed, falling back to local audit:', e);
+        console.warn('Supabase approval direct update error:', e);
       }
     }
 
