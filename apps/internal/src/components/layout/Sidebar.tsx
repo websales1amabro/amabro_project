@@ -13,13 +13,14 @@ import {
   History,
   ShieldAlert,
   SlidersHorizontal,
-  Package
+  Package,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { UserRole } from '../../types/database';
 
 export const Sidebar: React.FC = () => {
-  const { role, profile, setSimulatedRole, canApproveQuotation } = useAuth();
+  const { role, profile, setSimulatedRole, canApproveQuotation, canAccessSettings } = useAuth();
 
   const roleColors: Record<UserRole, { bg: string; text: string; border: string }> = {
     owner: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-300' },
@@ -47,6 +48,17 @@ export const Sidebar: React.FC = () => {
     { to: '/finance', label: 'Keuangan & Pajak (Fase 3)', icon: TrendingUp },
     { to: '/products', label: 'Katalog Produk (CMS)', icon: Package },
     { to: '/audit', label: 'Jejak Audit', icon: History },
+    ...(canAccessSettings
+      ? [
+          {
+            to: '/settings',
+            label: 'Pengaturan Sistem',
+            icon: SettingsIcon,
+            badge: 'Owner',
+            highlight: true,
+          },
+        ]
+      : []),
   ];
 
   return (

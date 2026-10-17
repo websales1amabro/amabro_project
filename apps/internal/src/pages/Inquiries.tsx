@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { inquiryService } from '../services/inquiryService';
 import { customerService } from '../services/customerService';
+import { settingsService, type SalesMember } from '../services/settingsService';
 import type { Inquiry, Customer, InquiryPriority, InquirySource } from '../types/database';
 
 export const Inquiries: React.FC = () => {
@@ -21,6 +22,7 @@ export const Inquiries: React.FC = () => {
   const { role } = useAuth();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [salesTeam, setSalesTeam] = useState<SalesMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,17 +41,20 @@ export const Inquiries: React.FC = () => {
     contact_name: '',
     contact_phone: '',
     contact_email: '',
+    assigned_to: '',
   });
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [inqList, custList] = await Promise.all([
+      const [inqList, custList, team] = await Promise.all([
         inquiryService.getInquiries(),
         customerService.getCustomers(),
+        settingsService.getSalesTeam(),
       ]);
       setInquiries(inqList);
       setCustomers(custList);
+      setSalesTeam(team);
     } catch (e) {
       console.error(e);
     } finally {
@@ -69,6 +74,8 @@ export const Inquiries: React.FC = () => {
     }
 
     try {
+      const selectedSales = salesTeam.find((s) => s.id === formData.assigned_to);
+
       const created = await inquiryService.createInquiry({
         customer_id: formData.customer_id || undefined,
         title: formData.title,
@@ -80,6 +87,7 @@ export const Inquiries: React.FC = () => {
         contact_name: formData.contact_name,
         contact_phone: formData.contact_phone,
         contact_email: formData.contact_email,
+        assigned_to: selectedSales?.id || undefined,
       });
 
       setShowNewModal(false);
@@ -94,6 +102,7 @@ export const Inquiries: React.FC = () => {
         contact_name: '',
         contact_phone: '',
         contact_email: '',
+        assigned_to: '',
       });
       loadData();
       navigate(`/inquiries/${created.id}`);
@@ -355,6 +364,26 @@ export const Inquiries: React.FC = () => {
                     <option value="low">Low</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">
+                  Penanggung Jawab Sales (PIC)
+                </label>
+                <select
+                  value={formData.assigned_to}
+                  onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
+                  className="w-full p-2 rounded-lg border border-slate-300"
+                >
+                  <option value="">-- Pilih Sales PIC (Default) --</option>
+                  {salesTeam
+                    .filter((s) => s.is_active)
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.full_name} ({s.role === 'engineer' ? 'Sales Engineer' : 'Sales'} - {s.region})
+                      </option>
+                    ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

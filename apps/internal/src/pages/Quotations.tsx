@@ -20,11 +20,13 @@ import {
   TrendingDown,
   AlertTriangle,
   Award,
-  XCircle
+  XCircle,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { quotationService, DEFAULT_AUTOMATION_TERMS } from '../services/quotationService';
 import { approvalService } from '../services/approvalService';
+import { settingsService, DEFAULT_COMPANY_SETTINGS, type CompanySettings } from '../services/settingsService';
 import { terbilang } from '../utils/terbilang';
 import type { Quotation, QuotationItem, InternalQuotation } from '../types/database';
 
@@ -63,11 +65,16 @@ export const Quotations: React.FC = () => {
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [selectedItemForPrice, setSelectedItemForPrice] = useState<QuotationItem | null>(null);
   const [newUnitPriceInput, setNewUnitPriceInput] = useState<number>(0);
+  const [companySettings, setCompanySettings] = useState<CompanySettings>(DEFAULT_COMPANY_SETTINGS);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const list = await quotationService.getQuotations();
+      const [list, loadedSettings] = await Promise.all([
+        quotationService.getQuotations(),
+        settingsService.getCompanySettings(),
+      ]);
+      setCompanySettings(loadedSettings);
       setQuotations(list);
       if (list.length > 0) {
         const detail = await quotationService.getQuotationById(list[0].id);
@@ -97,6 +104,12 @@ export const Quotations: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    const handleSettingsUpdate = () => {
+      settingsService.getCompanySettings().then(setCompanySettings);
+    };
+    window.addEventListener('amabro_settings_updated', handleSettingsUpdate);
+    return () => window.removeEventListener('amabro_settings_updated', handleSettingsUpdate);
   }, [role]);
 
   const handleSelectQuotation = async (q: Quotation) => {
@@ -244,6 +257,24 @@ export const Quotations: React.FC = () => {
   const isApproved = selectedQuotation.status === 'approved';
   const isSent = selectedQuotation.status === 'sent';
 
+  const handleSendWhatsApp = () => {
+    if (!selectedQuotation) return;
+    const phone = selectedQuotation.inquiry?.customer?.pic_phone || prompt('Masukkan nomor WhatsApp PIC Customer (contoh: 08123456789):');
+    if (!phone) return;
+    const cleanPhone = phone.replace(/\D/g, '').replace(/^0/, '62');
+    const template = companySettings.wa_quotation_template || DEFAULT_COMPANY_SETTINGS.wa_quotation_template;
+    const message = template
+      .replace('{customer_pic}', selectedQuotation.inquiry?.customer?.pic_name || 'Bpk/Ibu')
+      .replace('{quotation_no}', selectedQuotation.quotation_number)
+      .replace('{project_title}', selectedQuotation.inquiry?.title || 'Pengadaan Sistem Otomasi')
+      .replace('{total_price}', `Rp ${Math.round(grandTotal).toLocaleString('id-ID')} (Incl. PPN 11%)`)
+      .replace('{validity_days}', String(selectedQuotation.validity_days || companySettings.default_validity_days || 14))
+      .replace('{sales_name}', selectedQuotation.inquiry?.assignee?.full_name || profile?.full_name || 'Sales Dept')
+      .replace('{sales_phone}', companySettings.whatsapp);
+
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   return (
     <div className="space-y-6">
       {/* Top action header (Hidden when printing PDF) */}
@@ -276,6 +307,19 @@ export const Quotations: React.FC = () => {
             className="inline-flex items-center gap-1.5 bg-purple-700 hover:bg-purple-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-all shadow-xs cursor-pointer"
           >
             <Handshake className="w-3.5 h-3.5" /> Negosiasi & Deal (Won/Lost)
+          </button>
+
+          <button
+            onClick={handleSendWhatsApp}
+            disabled={!isApproved && !isSent}
+            title={!isApproved ? 'Hanya dapat dikirim via WA setelah disetujui Owner' : 'Kirim ringkasan penawaran via WhatsApp ke customer'}
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg shadow-sm transition-all ${
+              isApproved || isSent
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" /> Kirim via WA
           </button>
 
           <button
@@ -415,16 +459,16 @@ export const Quotations: React.FC = () => {
             />
             <div>
               <h2 className="text-base sm:text-xl font-black text-slate-900 leading-tight tracking-wide uppercase">
-                PT. AMABRO BINTANG INOVASI
+                {companySettings.company_name}
               </h2>
               <p className="text-[11px] font-semibold text-slate-700">
-                Industrial Automation Systems, Instrumentation & Electrical Solutions
+                {companySettings.tagline}
               </p>
               <p className="text-[10px] text-slate-600 mt-0.5 leading-snug">
-                Plaza Aminta Lt 5/504, Jl TB Simatupang Kav 10, Jakarta Selatan - DKI Jakarta - Indonesia 12310
+                {companySettings.address}
               </p>
               <p className="text-[10px] text-slate-600 leading-snug">
-                Phone: 021-2292-0544 | Email: info@amabroindonesia.com | Website: www.amabroindonesia.com
+                Phone: {companySettings.phone} | WA: {companySettings.whatsapp} | Email: {companySettings.email} | Website: {companySettings.website}
               </p>
             </div>
           </div>
@@ -588,6 +632,9 @@ export const Quotations: React.FC = () => {
           <ol className="list-decimal pl-4 space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
             <li><strong>Pengiriman:</strong> {selectedQuotation.delivery_terms || DEFAULT_AUTOMATION_TERMS.delivery_terms}</li>
             <li><strong>Pembayaran:</strong> {selectedQuotation.payment_terms || DEFAULT_AUTOMATION_TERMS.payment_terms}</li>
+            {companySettings.bank_account_number && (
+              <li><strong>Rekening Pembayaran:</strong> {companySettings.bank_name} A/C {companySettings.bank_account_number} a.n. {companySettings.bank_account_holder}</li>
+            )}
             <li><strong>Masa Garansi:</strong> {selectedQuotation.warranty_terms || DEFAULT_AUTOMATION_TERMS.warranty_terms}</li>
             <li><strong>Ketentuan Umum:</strong> {selectedQuotation.general_terms || DEFAULT_AUTOMATION_TERMS.general_terms}</li>
           </ol>
@@ -598,7 +645,7 @@ export const Quotations: React.FC = () => {
           <div className="space-y-16 w-64">
             <div>
               <p className="font-semibold text-slate-700">Hormat kami,</p>
-              <p className="font-bold text-slate-900 uppercase">PT. AMABRO BINTANG INOVASI</p>
+              <p className="font-bold text-slate-900 uppercase">{companySettings.company_name}</p>
             </div>
             <div>
               <p className="font-bold text-slate-900 underline tracking-wide">

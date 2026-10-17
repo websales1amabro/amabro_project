@@ -224,6 +224,7 @@ export const inquiryService = {
     priority: InquiryPriority;
     deadline?: string;
     estimated_value?: number;
+    assigned_to?: string;
     items?: Omit<InquiryItem, 'id' | 'inquiry_id' | 'created_at' | 'updated_at'>[];
   }): Promise<Inquiry> {
     if (isSupabaseConfigured) {
@@ -248,6 +249,7 @@ export const inquiryService = {
             priority: payload.priority,
             deadline: payload.deadline,
             estimated_value: payload.estimated_value || 0,
+            assigned_to: payload.assigned_to,
             status: 'inquiry',
           })
           .select()
@@ -292,6 +294,7 @@ export const inquiryService = {
       priority: payload.priority || 'medium',
       deadline: payload.deadline || null,
       estimated_value: payload.estimated_value || 0,
+      assigned_to: payload.assigned_to || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

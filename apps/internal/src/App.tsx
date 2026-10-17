@@ -13,6 +13,7 @@ import { Transactions } from './pages/Transactions';
 import { Finance } from './pages/Finance';
 import { Products } from './pages/Products';
 import { AuditLog } from './pages/AuditLog';
+import { Settings } from './pages/Settings';
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
             <Route path="finance" element={<Finance />} />
             <Route path="products" element={<Products />} />
             <Route path="audit" element={<AuditLog />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

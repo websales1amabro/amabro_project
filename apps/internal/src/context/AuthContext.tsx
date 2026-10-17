@@ -18,6 +18,7 @@ interface AuthContextType {
   canEditTechnicalAnalysis: boolean;
   canManageVendors: boolean;
   canManageInvoices: boolean;
+  canAccessSettings: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -176,6 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const canEditTechnicalAnalysis = role === 'owner' || role === 'engineer' || role === 'sales';
   const canManageVendors = role === 'owner' || role === 'purchasing';
   const canManageInvoices = role === 'owner' || role === 'finance';
+  const canAccessSettings = role === 'owner';
 
   return (
     <AuthContext.Provider
@@ -193,6 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         canEditTechnicalAnalysis,
         canManageVendors,
         canManageInvoices,
+        canAccessSettings,
       }}
     >
       {children}
