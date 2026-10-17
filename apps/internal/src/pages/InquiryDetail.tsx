@@ -575,12 +575,26 @@ export const InquiryDetail: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-5">
-            {items.map((it, idx) => {
-              const quotesForItem = vendorQuotes.filter((q) => q.item_id === it.id);
+          {items.length === 0 ? (
+            <div className="bg-white rounded-xl border border-dashed border-slate-300 p-8 text-center space-y-3">
+              <p className="text-sm font-semibold text-slate-700">Belum ada item barang pada inquiry ini</p>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Penawaran vendor (harga modal, lead time, dan garansi) dicatat spesifik per-item barang. Silakan tambahkan item barang terlebih dahulu di Tahap V1 & V2.
+              </p>
+              <button
+                onClick={() => setActiveTab('technical_v1_v2')}
+                className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition-colors shadow-xs"
+              >
+                Buka Tab V1 & V2: Tambah Item Barang
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {items.map((it, idx) => {
+                const quotesForItem = vendorQuotes.filter((q) => q.item_id === it.id);
 
-              return (
-                <div key={it.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+                return (
+                  <div key={it.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                     <div>
                       <div className="flex items-center gap-2">
@@ -697,6 +711,7 @@ export const InquiryDetail: React.FC = () => {
               );
             })}
           </div>
+          )}
         </div>
       )}
 
