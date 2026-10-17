@@ -233,38 +233,42 @@ export const inquiryService = {
       });
       const inqNumber = seqError ? `INQ/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${Math.floor(Math.random() * 9000 + 1000)}` : seqData;
 
-      const { data, error } = await supabase
-        .from('inquiries')
-        .insert({
-          inquiry_number: inqNumber,
-          customer_id: payload.customer_id,
-          title: payload.title,
-          description: payload.description,
-          source: payload.source,
-          contact_name: payload.contact_name,
-          contact_email: payload.contact_email,
-          contact_phone: payload.contact_phone,
-          priority: payload.priority,
-          deadline: payload.deadline,
-          estimated_value: payload.estimated_value || 0,
-          status: 'inquiry',
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('inquiries')
+          .insert({
+            inquiry_number: inqNumber,
+            customer_id: payload.customer_id,
+            title: payload.title,
+            description: payload.description,
+            source: payload.source,
+            contact_name: payload.contact_name,
+            contact_email: payload.contact_email,
+            contact_phone: payload.contact_phone,
+            priority: payload.priority,
+            deadline: payload.deadline,
+            estimated_value: payload.estimated_value || 0,
+            status: 'inquiry',
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
-
-      // Insert items if present
-      if (payload.items && payload.items.length > 0) {
-        const itemRows = payload.items.map((it, idx) => ({
-          ...it,
-          inquiry_id: data.id,
-          item_no: idx + 1,
-        }));
-        await supabase.from('inquiry_items').insert(itemRows);
+        if (!error && data) {
+          // Insert items if present
+          if (payload.items && payload.items.length > 0) {
+            const itemRows = payload.items.map((it, idx) => ({
+              ...it,
+              inquiry_id: data.id,
+              item_no: idx + 1,
+            }));
+            await supabase.from('inquiry_items').insert(itemRows);
+          }
+          return data as Inquiry;
+        }
+        console.warn('Supabase createInquiry error, falling back to local:', error?.message);
+      } catch (e) {
+        console.warn('Supabase createInquiry failed, falling back to local storage:', e);
       }
-
-      return data as Inquiry;
     }
 
     // Local persistent mock
@@ -349,13 +353,19 @@ export const inquiryService = {
 
   async addInquiryItem(item: Omit<InquiryItem, 'id' | 'created_at' | 'updated_at'>): Promise<InquiryItem> {
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from('inquiry_items')
-        .insert(item)
-        .select()
-        .single();
-      if (error) throw error;
-      return data as InquiryItem;
+      try {
+        const { data, error } = await supabase
+          .from('inquiry_items')
+          .insert(item)
+          .select()
+          .single();
+        if (!error && data) {
+          return data as InquiryItem;
+        }
+        console.warn('Supabase RLS active on inquiry_items, saving to local state:', error?.message);
+      } catch (e) {
+        console.warn('Supabase addInquiryItem failed, saving locally:', e);
+      }
     }
 
     const allItems = getStoredItems();

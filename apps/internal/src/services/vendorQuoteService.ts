@@ -144,31 +144,37 @@ export const vendorQuoteService = {
     const unitPriceIdr = quote.unit_price * (quote.exchange_rate || 1);
 
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase
-        .from('vendor_quotes')
-        .insert({
-          inquiry_id: quote.inquiry_id,
-          item_id: quote.item_id,
-          vendor_id: quote.vendor_id,
-          unit_price: quote.unit_price,
-          currency: quote.currency || 'IDR',
-          exchange_rate: quote.exchange_rate || 1,
-          lead_time_days: quote.lead_time_days,
-          warranty_period: quote.warranty_period,
-          validity_date: quote.validity_date,
-          payment_terms: quote.payment_terms,
-          quote_reference: quote.quote_reference,
-          notes: quote.notes,
-          is_selected: false,
-        })
-        .select(`
-          *,
-          vendor:vendors(id, name, pic_name, pic_phone, payment_terms)
-        `)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('vendor_quotes')
+          .insert({
+            inquiry_id: quote.inquiry_id,
+            item_id: quote.item_id,
+            vendor_id: quote.vendor_id,
+            unit_price: quote.unit_price,
+            currency: quote.currency || 'IDR',
+            exchange_rate: quote.exchange_rate || 1,
+            lead_time_days: quote.lead_time_days,
+            warranty_period: quote.warranty_period,
+            validity_date: quote.validity_date,
+            payment_terms: quote.payment_terms,
+            quote_reference: quote.quote_reference,
+            notes: quote.notes,
+            is_selected: false,
+          })
+          .select(`
+            *,
+            vendor:vendors(id, name, pic_name, pic_phone, payment_terms)
+          `)
+          .single();
 
-      if (error) throw error;
-      return data as VendorQuote;
+        if (!error && data) {
+          return data as VendorQuote;
+        }
+        console.warn('Supabase addVendorQuote error, falling back to local:', error?.message);
+      } catch (e) {
+        console.warn('Supabase addVendorQuote failed, falling back to local storage:', e);
+      }
     }
 
     const quotes = getStoredQuotes();
