@@ -3,14 +3,14 @@
 -- FASE 2 & FASE 3: Transaksi (PO, DO, Invoice, Pembayaran) & Pajak/Keuangan
 -- ==============================================================================
 
--- 1. Insert Sequence Seeds for Transactions
-insert into public.document_sequences (code, prefix, current_value, padding)
+-- 1. Insert Sequence Seeds for Transactions (matches document_sequences schema: code, prefix, year, month, last_number)
+insert into public.document_sequences (code, prefix, year, month, last_number, updated_at)
 values 
-  ('PO_CUST', 'POC', 0, 4),
-  ('PO_VEND', 'POV', 0, 4),
-  ('DO', 'DO', 0, 4),
-  ('INV', 'INV', 0, 4),
-  ('FP_OUT', 'FPK', 0, 4)
+  ('PO_CUST', 'POC', extract(year from current_date)::integer, extract(month from current_date)::integer, 0, now()),
+  ('PO_VEND', 'POV', extract(year from current_date)::integer, extract(month from current_date)::integer, 0, now()),
+  ('DO', 'DO', extract(year from current_date)::integer, extract(month from current_date)::integer, 0, now()),
+  ('INV', 'INV', extract(year from current_date)::integer, extract(month from current_date)::integer, 0, now()),
+  ('FP_OUT', 'FPK', extract(year from current_date)::integer, extract(month from current_date)::integer, 0, now())
 on conflict (code) do nothing;
 
 -- 2. Customer Purchase Orders (PO Masuk dari Customer)
