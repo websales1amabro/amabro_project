@@ -21,13 +21,15 @@ import {
   TrendingUp,
   Percent,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { inquiryService } from '../services/inquiryService';
 import { vendorService } from '../services/vendorService';
 import { vendorQuoteService } from '../services/vendorQuoteService';
 import { commercialAnalysisService } from '../services/commercialAnalysisService';
+import { quotationService } from '../services/quotationService';
 import { generateWhatsAppRFQ, generateEmailRFQ } from '../utils/rfqGenerator';
 import type { 
   Inquiry, 
@@ -262,6 +264,13 @@ export const InquiryDetail: React.FC = () => {
     if (!inquiry) return;
     if (confirm(`Pindahkan status inquiry ke "${label}"?`)) {
       await inquiryService.updateInquiryStatus(inquiry.id, nextStatus);
+      if (nextStatus === 'waiting_approval') {
+        try {
+          await quotationService.ensureQuotationForInquiry(inquiry, items, commercialData);
+        } catch (e) {
+          console.warn('Auto create quotation failed:', e);
+        }
+      }
       loadAllData();
     }
   };
@@ -368,6 +377,15 @@ export const InquiryDetail: React.FC = () => {
             >
               Ajukan Approval ke Owner <ArrowRight className="w-3.5 h-3.5" />
             </button>
+          )}
+
+          {inquiry.status === 'waiting_approval' && (
+            <Link
+              to="/approvals"
+              className="inline-flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-xs cursor-pointer transition-all"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" /> Buka Owner Approval Center <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           )}
         </div>
       </div>

@@ -1,5 +1,13 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { Quotation, QuotationItem, InternalQuotation, UserRole } from '../types/database';
+import type { 
+  Quotation, 
+  QuotationItem, 
+  InternalQuotation, 
+  UserRole,
+  Inquiry,
+  InquiryItem,
+  CommercialAnalysis 
+} from '../types/database';
 
 const QUOTATIONS_STORAGE_KEY = 'asf_quotations_data';
 const QUOTATION_ITEMS_STORAGE_KEY = 'asf_quotation_items_data';
@@ -285,5 +293,150 @@ export const quotationService = {
       quotes[idx] = { ...quotes[idx], ...terms, updated_at: new Date().toISOString() };
       saveStoredQuotations(quotes);
     }
+  },
+
+  async ensureQuotationForInquiry(
+    inquiry: Inquiry,
+    items: InquiryItem[],
+    commercial?: CommercialAnalysis | null
+  ): Promise<Quotation> {
+    const existingQuotes = await this.getQuotations();
+    const existing = existingQuotes.find((q) => q.inquiry_id === inquiry.id);
+    if (existing) {
+      return existing;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+    const seq = String(existingQuotes.length + 1).padStart(4, '0');
+    const quoNumber = `QUO/${currentYear}/${currentMonth}/${seq}`;
+
+    const subtotal = commercial?.selling_price || inquiry.estimated_value || 25000000;
+    const taxRate = 11.0;
+    const taxAmount = (subtotal * taxRate) / 100;
+    const grandTotal = subtotal + taxAmount;
+
+    const newQuotation: Quotation = {
+      id: crypto.randomUUID(),
+      quotation_number: quoNumber,
+      inquiry_id: inquiry.id,
+      revision: 0,
+      status: 'waiting_approval',
+      date: new Date().toISOString().split('T')[0],
+      validity_days: 14,
+      currency: 'IDR',
+      subtotal,
+      discount: 0,
+      tax_rate: taxRate,
+      tax_amount: taxAmount,
+      grand_total: grandTotal,
+      payment_terms: DEFAULT_AUTOMATION_TERMS.payment_terms,
+      delivery_terms: DEFAULT_AUTOMATION_TERMS.delivery_terms,
+      warranty_terms: DEFAULT_AUTOMATION_TERMS.warranty_terms,
+      general_terms: DEFAULT_AUTOMATION_TERMS.general_terms,
+      customer_notes: inquiry.description || 'Penawaran Solusi Otomasi Industri PT Amabro Bintang Inovasi',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      inquiry: inquiry,
+    };
+
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('quotations')
+          .insert({
+            id: newQuotation.id,
+            quotation_number: newQuotation.quotation_number,
+            inquiry_id: newQuotation.inquiry_id,
+            revision: 0,
+            status: 'waiting_approval',
+            date: newQuotation.date,
+            validity_days: newQuotation.validity_days,
+            currency: 'IDR',
+            subtotal,
+            discount: 0,
+            tax_rate: taxRate,
+            tax_amount: taxAmount,
+            grand_total: grandTotal,
+            payment_terms: newQuotation.payment_terms,
+            delivery_terms: newQuotation.delivery_terms,
+            warranty_terms: newQuotation.warranty_terms,
+            general_terms: newQuotation.general_terms,
+            customer_notes: newQuotation.customer_notes,
+          })
+          .select(`
+            *,
+            inquiry:inquiries(
+              id, inquiry_number, title,
+              customer:customers(id, name, pic_name, pic_phone, pic_email, address)
+            )
+          `)
+          .single();
+
+        if (!error && data) {
+          if (items.length > 0) {
+            const quoItems = items.map((it, idx) => ({
+              quotation_id: data.id,
+              item_no: idx + 1,
+              item_name: it.item_name,
+              specifications: it.specifications || '',
+              brand: it.brand || 'Amabro Partner',
+              quantity: it.quantity,
+              unit: it.unit,
+              unit_price: Math.round(subtotal / items.length / (it.quantity || 1)),
+              total_price: Math.round(subtotal / items.length),
+            }));
+            await supabase.from('quotation_items').insert(quoItems);
+          }
+          return data as Quotation;
+        }
+        console.warn('Supabase quotation insert error, falling back locally:', error?.message);
+      } catch (e) {
+        console.warn('Supabase ensureQuotationForInquiry failed, falling back locally:', e);
+      }
+    }
+
+    const quotes = getStoredQuotations();
+    quotes.unshift(newQuotation);
+    saveStoredQuotations(quotes);
+
+    // Also store items locally
+    const allQuoItems = getStoredQuotationItems();
+    if (items.length > 0) {
+      items.forEach((it, idx) => {
+        allQuoItems.push({
+          id: crypto.randomUUID(),
+          quotation_id: newQuotation.id,
+          item_no: idx + 1,
+          item_name: it.item_name,
+          specifications: it.specifications || '',
+          brand: it.brand || 'Amabro Partner',
+          quantity: it.quantity,
+          unit: it.unit,
+          unit_price: Math.round(subtotal / items.length / (it.quantity || 1)),
+          total_price: Math.round(subtotal / items.length),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      });
+    } else {
+      allQuoItems.push({
+        id: crypto.randomUUID(),
+        quotation_id: newQuotation.id,
+        item_no: 1,
+        item_name: inquiry.title,
+        specifications: inquiry.description || 'Paket solusi otomasi industri',
+        brand: 'PT Amabro Bintang Inovasi',
+        quantity: 1,
+        unit: 'Lot',
+        unit_price: subtotal,
+        total_price: subtotal,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+    saveStoredQuotationItems(allQuoItems);
+
+    return newQuotation;
   },
 };

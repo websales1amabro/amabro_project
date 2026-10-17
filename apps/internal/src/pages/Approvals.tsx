@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { approvalService } from '../services/approvalService';
 import { quotationService } from '../services/quotationService';
 import { commercialAnalysisService } from '../services/commercialAnalysisService';
+import { inquiryService } from '../services/inquiryService';
 import type { Quotation, Approval, ApprovalDecision } from '../types/database';
 
 interface ApprovalCardItem {
@@ -40,6 +41,19 @@ export const Approvals: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Auto-ensure quotation exists for inquiries in waiting_approval
+      try {
+        const allInquiries = await inquiryService.getInquiries();
+        const waitingInqs = allInquiries.filter((i) => i.status === 'waiting_approval');
+        for (const inq of waitingInqs) {
+          const inqItems = await inquiryService.getInquiryItems(inq.id);
+          const comm = await commercialAnalysisService.getAnalysis(inq.id, 'owner');
+          await quotationService.ensureQuotationForInquiry(inq, inqItems, comm);
+        }
+      } catch (inqErr) {
+        console.warn('Error syncing waiting_approval inquiries:', inqErr);
+      }
+
       const allQuotes = await quotationService.getQuotations();
       const waiting = allQuotes.filter((q) => q.status === 'waiting_approval');
 
